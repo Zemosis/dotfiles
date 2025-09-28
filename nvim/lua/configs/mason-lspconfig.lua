@@ -1,27 +1,36 @@
-local lspconfig = package.loaded["lspconfig"]
+local mason_lspconfig = require("mason-lspconfig")
 
--- List of servers to ignore during install
+-- List of servers we want installed by mason
+-- (must match the ones you defined in lspconfig.lua)
+local servers = {
+    "lua_ls",
+    "clangd",
+    "pyright",
+    -- "gopls",
+    -- "hls",
+}
+
+-- Ignore certain servers if needed
 local ignore_install = {}
 
--- Helper function to find if value is in table.
-local function table_contains(table, value)
-    for _, v in ipairs(table) do
-        if v == value then
-            return true
+local function filter_servers(list, ignore)
+    local result = {}
+    for _, s in ipairs(list) do
+        local skip = false
+        for _, ign in ipairs(ignore) do
+            if s == ign then
+                skip = true
+                break
+            end
+        end
+        if not skip then
+            table.insert(result, s)
         end
     end
-    return false
+    return result
 end
 
--- Build a list of lsp servers to install minus the ignored list.
-local all_servers = {}
-for _, s in ipairs(lspconfig.servers) do
-    if not table_contains(ignore_install, s) then
-        table.insert(all_servers, s)
-    end
-end
-
-require("mason-lspconfig").setup({
-    ensure_installed = all_servers,
+mason_lspconfig.setup({
+    ensure_installed = filter_servers(servers, ignore_install),
     automatic_installation = false,
 })

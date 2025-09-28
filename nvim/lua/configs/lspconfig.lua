@@ -2,101 +2,19 @@ local on_attach = require("nvchad.configs.lspconfig").on_attach
 local on_init = require("nvchad.configs.lspconfig").on_init
 local capabilities = require("nvchad.configs.lspconfig").capabilities
 
-local lspconfig = require("lspconfig")
+-- ---------------------------------------------------------------------
+-- Define LSP server configurations
+---------------------------------------------------------------------
 
--- list of all servers configured.
-lspconfig.servers = {
-    "lua_ls",
-    "clangd",
-    -- "gopls",
-    -- "hls",
-    -- "ols",
-    "pyright",
-}
-
--- list of servers configured with default config.
-local default_servers = {
-    -- "ols",
-    -- "pyright",
-}
-
--- lsps with default config
-for _, lsp in ipairs(default_servers) do
-    lspconfig[lsp].setup({
-        on_attach = on_attach,
-        on_init = on_init,
-        capabilities = capabilities,
-    })
-end
-
-lspconfig.clangd.setup({
-    on_attach = function(client, bufnr)
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
-        on_attach(client, bufnr)
-    end,
-    on_init = on_init,
-    capabilities = capabilities,
-})
-
-lspconfig.pyright.setup({
+-- Lua LS
+vim.lsp.config("lua_ls", {
     on_attach = on_attach,
     on_init = on_init,
     capabilities = capabilities,
-
-    settings = {
-        python = {
-            analysis = {
-                typeCheckingMode = "off", -- Disable type checking diagnostics
-            },
-        },
-    },
-})
-
--- lspconfig.gopls.setup({
---     on_attach = function(client, bufnr)
---         client.server_capabilities.documentFormattingProvider = false
---         client.server_capabilities.documentRangeFormattingProvider = false
---         on_attach(client, bufnr)
---     end,
---     on_init = on_init,
---     capabilities = capabilities,
---     cmd = { "gopls" },
---     filetypes = { "go", "gomod", "gotmpl", "gowork" },
---     root_dir = lspconfig.util.root_pattern("go.work", "go.mod", ".git"),
---     settings = {
---         gopls = {
---             analyses = {
---                 unusedparams = true,
---             },
---             completeUnimported = true,
---             usePlaceholders = true,
---             staticcheck = true,
---         },
---     },
--- })
-
--- lspconfig.hls.setup({
---     on_attach = function(client, bufnr)
---         client.server_capabilities.documentFormattingProvider = false
---         client.server_capabilities.documentRangeFormattingProvider = false
---         on_attach(client, bufnr)
---     end,
---
---     on_init = on_init,
---     capabilities = capabilities,
--- })
-
-lspconfig.lua_ls.setup({
-    on_attach = on_attach,
-    on_init = on_init,
-    capabilities = capabilities,
-
     settings = {
         Lua = {
             diagnostics = {
-                enable = false, -- Disable all diagnostics from lua_ls
-                -- globals = { "vim" },
+                enable = false, -- Disable lua_ls diagnostics
             },
             workspace = {
                 library = {
@@ -111,4 +29,75 @@ lspconfig.lua_ls.setup({
             },
         },
     },
+})
+
+-- Pyright
+vim.lsp.config("pyright", {
+    on_attach = on_attach,
+    on_init = on_init,
+    capabilities = capabilities,
+    settings = {
+        python = {
+            analysis = {
+                typeCheckingMode = "off", -- Disable type checking diagnostics
+            },
+        },
+    },
+})
+
+-- Clangd
+vim.lsp.config("clangd", {
+    on_attach = function(client, bufnr)
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
+        on_attach(client, bufnr)
+    end,
+    on_init = on_init,
+    capabilities = capabilities,
+})
+
+-- -- Go (gopls)
+-- vim.lsp.config("gopls", {
+--   on_attach = function(client, bufnr)
+--     client.server_capabilities.documentFormattingProvider = false
+--     client.server_capabilities.documentRangeFormattingProvider = false
+--     on_attach(client, bufnr)
+--   end,
+--   on_init = on_init,
+--   capabilities = capabilities,
+--   cmd = { "gopls" },
+--   filetypes = { "go", "gomod", "gotmpl", "gowork" },
+--   root_markers = { "go.work", "go.mod", ".git" },
+--   settings = {
+--     gopls = {
+--       analyses = { unusedparams = true },
+--       completeUnimported = true,
+--       usePlaceholders = true,
+--       staticcheck = true,
+--     },
+--   },
+-- })
+--
+-- -- Haskell (hls)
+-- vim.lsp.config("hls", {
+--   on_attach = function(client, bufnr)
+--     client.server_capabilities.documentFormattingProvider = false
+--     client.server_capabilities.documentRangeFormattingProvider = false
+--     on_attach(client, bufnr)
+--   end,
+--   on_init = on_init,
+--   capabilities = capabilities,
+-- })
+--
+
+---------------------------------------------------------------------
+-- Enable the servers (auto-starts when matching files open)
+---------------------------------------------------------------------
+vim.lsp.enable({
+    "lua_ls",
+    "clangd",
+    "pyright",
+    -- "gopls",
+    -- "hls",
+    -- Add more servers here when you need them
 })

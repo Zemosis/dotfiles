@@ -44,14 +44,14 @@ local options = {
             prepend_args = {
                 "--fast",
                 "--line-length",
-                "80",
+                "100",
             },
         },
     },
 
     format_on_save = {
         -- These options will be passed to conform.format()
-        timeout_ms = 500,
+        timeout_ms = 5000,
         lsp_fallback = true,
     },
 }
