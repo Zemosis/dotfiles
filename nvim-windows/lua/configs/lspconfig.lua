@@ -2,9 +2,20 @@ local on_attach = require("nvchad.configs.lspconfig").on_attach
 local on_init = require("nvchad.configs.lspconfig").on_init
 local capabilities = require("nvchad.configs.lspconfig").capabilities
 
--- ---------------------------------------------------------------------
--- Define LSP server configurations
 ---------------------------------------------------------------------
+-- Define LSP server configurations using the new API
+---------------------------------------------------------------------
+
+-- Generic setup for web-related servers
+local default_servers = { "ts_ls", "tailwindcss", "html", "cssls" }
+
+for _, lsp in ipairs(default_servers) do
+    vim.lsp.config(lsp, {
+        on_attach = on_attach,
+        on_init = on_init,
+        capabilities = capabilities,
+    })
+end
 
 -- Lua LS
 vim.lsp.config("lua_ls", {
@@ -14,7 +25,7 @@ vim.lsp.config("lua_ls", {
     settings = {
         Lua = {
             diagnostics = {
-                enable = false, -- Disable lua_ls diagnostics
+                enable = false, -- Diagnostics handled by selene
             },
             workspace = {
                 library = {
@@ -39,7 +50,7 @@ vim.lsp.config("pyright", {
     settings = {
         python = {
             analysis = {
-                typeCheckingMode = "off", -- Disable type checking diagnostics
+                typeCheckingMode = "basic", -- Enabled basic checking for cleaner code
             },
         },
     },
@@ -48,64 +59,32 @@ vim.lsp.config("pyright", {
 -- Clangd
 vim.lsp.config("clangd", {
     on_attach = function(client, bufnr)
+        -- Disable formatting to let conform.lua handle it
         client.server_capabilities.documentFormattingProvider = false
         client.server_capabilities.documentRangeFormattingProvider = false
         on_attach(client, bufnr)
     end,
     on_init = on_init,
     capabilities = capabilities,
-
     cmd = {
         "clangd",
         "--background-index",
         "--clang-tidy",
         "--header-insertion=never",
+        -- Path configured for your MinGW environment
         "--query-driver=C:/ProgramData/mingw64/bin/gcc.exe;C:/ProgramData/mingw64/bin/g++.exe",
     },
 })
 
--- -- Go (gopls)
--- vim.lsp.config("gopls", {
---   on_attach = function(client, bufnr)
---     client.server_capabilities.documentFormattingProvider = false
---     client.server_capabilities.documentRangeFormattingProvider = false
---     on_attach(client, bufnr)
---   end,
---   on_init = on_init,
---   capabilities = capabilities,
---   cmd = { "gopls" },
---   filetypes = { "go", "gomod", "gotmpl", "gowork" },
---   root_markers = { "go.work", "go.mod", ".git" },
---   settings = {
---     gopls = {
---       analyses = { unusedparams = true },
---       completeUnimported = true,
---       usePlaceholders = true,
---       staticcheck = true,
---     },
---   },
--- })
---
--- -- Haskell (hls)
--- vim.lsp.config("hls", {
---   on_attach = function(client, bufnr)
---     client.server_capabilities.documentFormattingProvider = false
---     client.server_capabilities.documentRangeFormattingProvider = false
---     on_attach(client, bufnr)
---   end,
---   on_init = on_init,
---   capabilities = capabilities,
--- })
---
-
 ---------------------------------------------------------------------
--- Enable the servers (auto-starts when matching files open)
+-- Enable the servers
 ---------------------------------------------------------------------
 vim.lsp.enable({
     "lua_ls",
     "clangd",
     "pyright",
-    -- "gopls",
-    -- "hls",
-    -- Add more servers here when you need them
+    "ts_ls",
+    "tailwindcss",
+    "html",
+    "cssls",
 })

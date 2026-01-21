@@ -22,6 +22,13 @@ local options = {
         "vim",
         "vimdoc",
         "yaml",
+        "html",
+        "css",
+        "javascript",
+        "typescript",
+        "tsx",
+        "markdown_inline",
+        "json",
     },
 
     highlight = {
