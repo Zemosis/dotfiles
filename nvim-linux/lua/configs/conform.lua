@@ -4,56 +4,63 @@ local options = {
         c_cpp = { "clang-format" },
         c = { "clang-format" },
         cpp = { "clang-format" },
-        -- go = { "gofumpt", "goimports-reviser", "golines" },
-        -- haskell = { "fourmolu", "stylish-haskell" },
         python = { "black" },
+        javascript = { "prettier" },
+        javascriptreact = { "prettier" },
+        typescript = { "prettier" },
+        typescriptreact = { "prettier" },
+        html = { "prettier" },
+        css = { "prettier" },
+        json = { "prettier" },
+        yaml = { "prettier" },
+        markdown = { "prettier" },
+        vue = { "prettier" },
     },
 
     formatters = {
-        -- -- C & C++
         ["clang-format"] = {
             prepend_args = {
-                "-style={ \
-                IndentWidth: 4, \
-                TabWidth: 4, \
-                UseTab: Never, \
-                AccessModifierOffset: 0, \
-                IndentAccessModifiers: true, \
-                PackConstructorInitializers: Never}",
+                "-style={"
+                    .. "IndentWidth: 4, "
+                    .. "TabWidth: 4, "
+                    .. "UseTab: Never, "
+                    .. "AccessModifierOffset: 0, "
+                    .. "IndentAccessModifiers: true, "
+                    .. "PackConstructorInitializers: Never"
+                    .. "}",
             },
         },
-        -- -- Golang
-        -- ["goimports-reviser"] = {
-        --     prepend_args = { "-rm-unused" },
-        -- },
-        -- golines = {
-        --     prepend_args = { "--max-len=80" },
-        -- },
-        -- -- Lua
-        -- stylua = {
-        --     prepend_args = {
-        --         "--column-width", "80",
-        --         "--line-endings", "Unix",
-        --         "--indent-type", "Spaces",
-        --         "--indent-width", "4",
-        --         "--quote-style", "AutoPreferDouble",
-        --     },
-        -- },
-        -- -- Python
         black = {
-            prepend_args = {
-                "--fast",
-                "--line-length",
+            prepend_args = { "--fast", "--line-length", "100" },
+        },
+        prettier = {
+            command = "prettierd",
+            fallback = "prettier",
+            args = {
+                "--print-width",
                 "100",
+                "--tab-width",
+                "2",
+                "--use-tabs",
+                "false",
+                "--single-quote",
+                "true",
+                "--trailing-comma",
+                "es5",
+                "--arrow-parens",
+                "avoid",
             },
         },
     },
 
     format_on_save = {
-        -- These options will be passed to conform.format()
         timeout_ms = 5000,
         lsp_fallback = true,
     },
 }
 
 require("conform").setup(options)
+
+require("mason-conform").setup({
+    ignore_install = {},
+})

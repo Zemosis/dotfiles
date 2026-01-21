@@ -1,103 +1,81 @@
 local on_attach = require("nvchad.configs.lspconfig").on_attach
 local on_init = require("nvchad.configs.lspconfig").on_init
 local capabilities = require("nvchad.configs.lspconfig").capabilities
+local lspconfig = require("lspconfig")
+local mason_lspconfig = require("mason-lspconfig")
 
--- ---------------------------------------------------------------------
--- Define LSP server configurations
----------------------------------------------------------------------
-
--- Lua LS
-vim.lsp.config("lua_ls", {
-    on_attach = on_attach,
-    on_init = on_init,
-    capabilities = capabilities,
-    settings = {
-        Lua = {
-            diagnostics = {
-                enable = false, -- Disable lua_ls diagnostics
-            },
-            workspace = {
-                library = {
-                    vim.fn.expand("$VIMRUNTIME/lua"),
-                    vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
-                    vim.fn.stdpath("data") .. "/lazy/ui/nvchad_types",
-                    vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy",
-                    "${3rd}/love2d/library",
-                },
-                maxPreload = 100000,
-                preloadFileSize = 10000,
-            },
-        },
-    },
-})
-
--- Pyright
-vim.lsp.config("pyright", {
-    on_attach = on_attach,
-    on_init = on_init,
-    capabilities = capabilities,
-    settings = {
-        python = {
-            analysis = {
-                typeCheckingMode = "off", -- Disable type checking diagnostics
-            },
-        },
-    },
-})
-
--- Clangd
-vim.lsp.config("clangd", {
-    on_attach = function(client, bufnr)
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
-        on_attach(client, bufnr)
-    end,
-    on_init = on_init,
-    capabilities = capabilities,
-})
-
--- -- Go (gopls)
--- vim.lsp.config("gopls", {
---   on_attach = function(client, bufnr)
---     client.server_capabilities.documentFormattingProvider = false
---     client.server_capabilities.documentRangeFormattingProvider = false
---     on_attach(client, bufnr)
---   end,
---   on_init = on_init,
---   capabilities = capabilities,
---   cmd = { "gopls" },
---   filetypes = { "go", "gomod", "gotmpl", "gowork" },
---   root_markers = { "go.work", "go.mod", ".git" },
---   settings = {
---     gopls = {
---       analyses = { unusedparams = true },
---       completeUnimported = true,
---       usePlaceholders = true,
---       staticcheck = true,
---     },
---   },
--- })
---
--- -- Haskell (hls)
--- vim.lsp.config("hls", {
---   on_attach = function(client, bufnr)
---     client.server_capabilities.documentFormattingProvider = false
---     client.server_capabilities.documentRangeFormattingProvider = false
---     on_attach(client, bufnr)
---   end,
---   on_init = on_init,
---   capabilities = capabilities,
--- })
---
-
----------------------------------------------------------------------
--- Enable the servers (auto-starts when matching files open)
----------------------------------------------------------------------
-vim.lsp.enable({
+-- List of servers to ensure are installed
+local servers = {
     "lua_ls",
     "clangd",
     "pyright",
-    -- "gopls",
-    -- "hls",
-    -- Add more servers here when you need them
+    "html",
+    "cssls",
+    "tailwindcss",
+    "ts_ls",
+    "jsonls",
+    "emmet_ls",
+}
+
+-- Setup Mason and use 'handlers' to configure servers automatically
+mason_lspconfig.setup({
+    ensure_installed = servers,
+    automatic_installation = false,
+    handlers = {
+        -- The default handler (runs for every server unless overridden below)
+        function(server_name)
+            lspconfig[server_name].setup({
+                on_attach = on_attach,
+                on_init = on_init,
+                capabilities = capabilities,
+            })
+        end,
+
+        -- Custom overrides for specific servers
+        ["lua_ls"] = function()
+            lspconfig.lua_ls.setup({
+                on_attach = on_attach,
+                on_init = on_init,
+                capabilities = capabilities,
+                settings = {
+                    Lua = {
+                        diagnostics = { enable = false },
+                        workspace = {
+                            library = {
+                                vim.fn.expand("$VIMRUNTIME/lua"),
+                                vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
+                                vim.fn.stdpath("data") .. "/lazy/ui/nvchad_types",
+                                vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy",
+                            },
+                            maxPreload = 100000,
+                            preloadFileSize = 10000,
+                        },
+                    },
+                },
+            })
+        end,
+
+        ["pyright"] = function()
+            lspconfig.pyright.setup({
+                on_attach = on_attach,
+                on_init = on_init,
+                capabilities = capabilities,
+                settings = {
+                    python = { analysis = { typeCheckingMode = "off" } },
+                },
+            })
+        end,
+
+        ["clangd"] = function()
+            lspconfig.clangd.setup({
+                on_attach = function(client, bufnr)
+                    client.server_capabilities.documentFormattingProvider = false
+                    client.server_capabilities.documentRangeFormattingProvider = false
+                    on_attach(client, bufnr)
+                end,
+                on_init = on_init,
+                capabilities = capabilities,
+            })
+        end,
+    },
 })

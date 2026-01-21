@@ -11,3 +11,11 @@ o.softtabstop = 4
 
 -- set filetype for .CBL COBOL files.
 -- vim.cmd([[ au BufRead,BufNewFile *.CBL set filetype=cobol ]])
+
+-- Function Folding
+o.foldenable = true
+o.foldlevel = 99
+o.foldmethod = "indent"
+o.foldcolumn = "0"
+o.foldopen = ""
+o.foldlevelstart = 0
