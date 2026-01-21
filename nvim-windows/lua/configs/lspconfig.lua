@@ -1,90 +1,60 @@
 local on_attach = require("nvchad.configs.lspconfig").on_attach
 local on_init = require("nvchad.configs.lspconfig").on_init
 local capabilities = require("nvchad.configs.lspconfig").capabilities
+local servers = require("configs.servers").lsp_servers
 
----------------------------------------------------------------------
--- Define LSP server configurations using the new API
----------------------------------------------------------------------
-
--- Generic setup for web-related servers
-local default_servers = { "ts_ls", "tailwindcss", "html", "cssls" }
-
-for _, lsp in ipairs(default_servers) do
-    vim.lsp.config(lsp, {
+-- Loop through the master list and setup servers
+for _, lsp in ipairs(servers) do
+    local opts = {
         on_attach = on_attach,
         on_init = on_init,
         capabilities = capabilities,
-    })
+    }
+
+    -- Specific settings for Lua
+    if lsp == "lua_ls" then
+        opts.settings = {
+            Lua = {
+                diagnostics = { enable = false }, -- using selene instead
+                workspace = {
+                    library = {
+                        vim.fn.expand("$VIMRUNTIME/lua"),
+                        vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
+                        vim.fn.stdpath("data") .. "/lazy/ui/nvchad_types",
+                        vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy",
+                    },
+                },
+            },
+        }
+    end
+
+    -- Specific settings for Python
+    if lsp == "pyright" then
+        opts.settings = {
+            python = { analysis = { typeCheckingMode = "basic" } },
+        }
+    end
+
+    -- Specific settings for C/C++
+    if lsp == "clangd" then
+        opts.cmd = {
+            "clangd",
+            "--background-index",
+            "--clang-tidy",
+            "--header-insertion=never",
+            "--query-driver=C:/ProgramData/mingw64/bin/gcc.exe;C:/ProgramData/mingw64/bin/g++.exe",
+        }
+        -- Disable formatting so conform.lua handles it
+        opts.on_attach = function(client, bufnr)
+            client.server_capabilities.documentFormattingProvider = false
+            client.server_capabilities.documentRangeFormattingProvider = false
+            on_attach(client, bufnr)
+        end
+    end
+
+    -- Use the new Neovim 0.11+ API
+    vim.lsp.config(lsp, opts)
 end
 
--- Lua LS
-vim.lsp.config("lua_ls", {
-    on_attach = on_attach,
-    on_init = on_init,
-    capabilities = capabilities,
-    settings = {
-        Lua = {
-            diagnostics = {
-                enable = false, -- Diagnostics handled by selene
-            },
-            workspace = {
-                library = {
-                    vim.fn.expand("$VIMRUNTIME/lua"),
-                    vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
-                    vim.fn.stdpath("data") .. "/lazy/ui/nvchad_types",
-                    vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy",
-                    "${3rd}/love2d/library",
-                },
-                maxPreload = 100000,
-                preloadFileSize = 10000,
-            },
-        },
-    },
-})
-
--- Pyright
-vim.lsp.config("pyright", {
-    on_attach = on_attach,
-    on_init = on_init,
-    capabilities = capabilities,
-    settings = {
-        python = {
-            analysis = {
-                typeCheckingMode = "basic", -- Enabled basic checking for cleaner code
-            },
-        },
-    },
-})
-
--- Clangd
-vim.lsp.config("clangd", {
-    on_attach = function(client, bufnr)
-        -- Disable formatting to let conform.lua handle it
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
-        on_attach(client, bufnr)
-    end,
-    on_init = on_init,
-    capabilities = capabilities,
-    cmd = {
-        "clangd",
-        "--background-index",
-        "--clang-tidy",
-        "--header-insertion=never",
-        -- Path configured for your MinGW environment
-        "--query-driver=C:/ProgramData/mingw64/bin/gcc.exe;C:/ProgramData/mingw64/bin/g++.exe",
-    },
-})
-
----------------------------------------------------------------------
--- Enable the servers
----------------------------------------------------------------------
-vim.lsp.enable({
-    "lua_ls",
-    "clangd",
-    "pyright",
-    "ts_ls",
-    "tailwindcss",
-    "html",
-    "cssls",
-})
+-- Enable all servers
+vim.lsp.enable(servers)
