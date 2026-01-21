@@ -54,4 +54,14 @@ return {
             require("configs.lint")
         end,
     },
+    {
+        "R-nvim/R.nvim",
+        lazy = false,
+        config = function()
+            -- Create a buffer mapping for sending lines to R
+            local opts = { noremap = true, silent = true }
+            vim.keymap.set("n", "<Enter>", "<Plug>RDSendLine", opts)
+            vim.keymap.set("v", "<Enter>", "<Plug>RSendSelection", opts)
+        end,
+    },
 }

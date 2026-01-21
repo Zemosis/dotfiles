@@ -15,6 +15,7 @@ local options = {
         yaml = { "prettier" },
         markdown = { "prettier" },
         vue = { "prettier" },
+        r = { "styler" },
     },
 
     formatters = {

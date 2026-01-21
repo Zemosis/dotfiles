@@ -25,6 +25,9 @@ local options = {
         "jsonc",
         "vue",
         "svelte",
+        -- R
+        "r",
+        "rnoweb",
     },
     highlight = {
         enable = true,
