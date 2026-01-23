@@ -15,7 +15,7 @@ local options = {
         yaml = { "prettier" },
         markdown = { "prettier" },
         vue = { "prettier" },
-        r = { "styler" },
+        -- r = { "styler" }, -- Uncomment if you want R on Windows
     },
 
     formatters = {
@@ -38,14 +38,14 @@ local options = {
             command = "prettierd",
             fallback = "prettier",
             args = {
+                "--stdin-filepath",
+                "$FILENAME",
                 "--print-width",
                 "100",
                 "--tab-width",
                 "2",
-                "--use-tabs",
-                "false",
+                "--no-use-tabs",
                 "--single-quote",
-                "true",
                 "--trailing-comma",
                 "es5",
                 "--arrow-parens",
