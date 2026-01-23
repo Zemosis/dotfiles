@@ -37,20 +37,6 @@ local options = {
         prettier = {
             command = "prettierd",
             fallback = "prettier",
-            args = {
-                "--stdin-filepath",
-                "$FILENAME",
-                "--print-width",
-                "100",
-                "--tab-width",
-                "2",
-                "--no-use-tabs",
-                "--single-quote",
-                "--trailing-comma",
-                "es5",
-                "--arrow-parens",
-                "avoid",
-            },
         },
     },
 
