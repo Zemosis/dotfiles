@@ -1,6 +1,6 @@
 local options = {
     formatters_by_ft = {
-        lua = { "stylua" },
+        lua = { "selene" },
         c_cpp = { "clang-format" },
         c = { "clang-format" },
         cpp = { "clang-format" },
