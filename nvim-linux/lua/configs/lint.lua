@@ -1,7 +1,7 @@
 local lint = require("lint")
 
 lint.linters_by_ft = {
-    lua = { "luacheck" },
+    lua = { "selene" },
     python = { "mypy", "ruff" },
     javascript = { "eslint_d" },
     javascriptreact = { "eslint_d" },
