@@ -15,7 +15,7 @@ local servers = {
     "ts_ls",
     "jsonls",
     "emmet_ls",
-    "r_language_server",
+    -- "r_language_server",
 }
 
 -- Setup Mason and use 'handlers' to configure servers automatically
