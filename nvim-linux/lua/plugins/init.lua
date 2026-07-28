@@ -11,17 +11,25 @@ return {
     },
     {
         "folke/trouble.nvim",
-        cmd = "TroubleToggle",
+        cmd = "Trouble",
         opts = {},
     },
+    -- Common Lisp: SLIME-like environment (REPL, eval, paredit, indentation)
     {
-        "numToStr/Comment.nvim",
-        event = "BufReadPre",
-        config = true,
+        "kovisoft/slimv",
+        ft = "lisp",
+        init = function()
+            require("configs.slimv")
+        end,
     },
     {
         "nvim-treesitter/nvim-treesitter",
-        event = { "BufReadPre", "BufNewFile" },
+        branch = "main",
+        -- last main-branch commit supporting Neovim 0.11; drop this pin (and
+        -- run :TSUpdate) once Neovim is upgraded to 0.12+
+        commit = "90cd6580e720caedacb91fdd587b747a6e77d61f",
+        lazy = false,
+        build = ":TSUpdate",
         config = function()
             require("configs.treesitter")
         end,
@@ -52,16 +60,6 @@ return {
         dependencies = { "rshkarin/mason-nvim-lint" },
         config = function()
             require("configs.lint")
-        end,
-    },
-    {
-        "R-nvim/R.nvim",
-        lazy = false,
-        config = function()
-            -- Create a buffer mapping for sending lines to R
-            local opts = { noremap = true, silent = true }
-            vim.keymap.set("n", "<Enter>", "<Plug>RDSendLine", opts)
-            vim.keymap.set("v", "<Enter>", "<Plug>RSendSelection", opts)
         end,
     },
 }

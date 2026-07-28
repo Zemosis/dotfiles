@@ -2,7 +2,7 @@ local lint = require("lint")
 
 lint.linters_by_ft = {
     lua = { "selene" },
-    python = { "mypy", "ruff" },
+    python = { "ruff" },
     javascript = { "eslint_d" },
     javascriptreact = { "eslint_d" },
     typescript = { "eslint_d" },
@@ -11,20 +11,17 @@ lint.linters_by_ft = {
     svelte = { "eslint_d" },
 }
 
-lint.linters.luacheck.args = { "--globals", "love", "vim", "--formatter", "plain", "--codes", "--ranges", "-" }
-
-if lint.linters.eslint_d then
-    lint.linters.eslint_d.args = {
-        "--no-warn-ignored",
-        "--format",
-        "unix",
-        "--stdin",
-        "--stdin-filename",
-        function()
-            return vim.api.nvim_buf_get_name(0)
-        end,
-    }
-end
+-- keep --format json: nvim-lint's eslint_d parser decodes JSON output
+lint.linters.eslint_d.args = {
+    "--no-warn-ignored",
+    "--format",
+    "json",
+    "--stdin",
+    "--stdin-filename",
+    function()
+        return vim.api.nvim_buf_get_name(0)
+    end,
+}
 
 vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
     callback = function()

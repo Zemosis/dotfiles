@@ -1,8 +1,6 @@
-local on_attach = require("nvchad.configs.lspconfig").on_attach
-local on_init = require("nvchad.configs.lspconfig").on_init
-local capabilities = require("nvchad.configs.lspconfig").capabilities
-local lspconfig = require("lspconfig")
-local mason_lspconfig = require("mason-lspconfig")
+-- NvChad's defaults() already applies capabilities/on_init via vim.lsp.config("*")
+-- and sets up keymaps through an LspAttach autocmd, so per-server overrides below
+-- only need the settings that differ from the defaults.
 
 -- List of servers to ensure are installed
 local servers = {
@@ -15,68 +13,61 @@ local servers = {
     "ts_ls",
     "jsonls",
     "emmet_ls",
-    -- "r_language_server",
+    "vue_ls",
+    "svelte",
 }
 
--- Setup Mason and use 'handlers' to configure servers automatically
-mason_lspconfig.setup({
+-- Vue works in hybrid mode: vue_ls covers the template/CSS parts while ts_ls
+-- must attach to .vue buffers with @vue/typescript-plugin for the script part.
+-- The plugin ships inside Mason's vue-language-server package.
+local vue_plugin_location = vim.fn.stdpath("data")
+    .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
+
+vim.lsp.config("ts_ls", {
+    init_options = {
+        plugins = {
+            {
+                name = "@vue/typescript-plugin",
+                location = vue_plugin_location,
+                languages = { "vue" },
+            },
+        },
+    },
+    -- full list: vim.lsp.config replaces list values instead of merging them
+    filetypes = {
+        "javascript",
+        "javascriptreact",
+        "javascript.jsx",
+        "typescript",
+        "typescriptreact",
+        "typescript.tsx",
+        "vue",
+    },
+})
+
+-- lua_ls diagnostics off: selene handles lua linting (see configs/lint.lua)
+vim.lsp.config("lua_ls", {
+    settings = {
+        Lua = {
+            diagnostics = { enable = false },
+        },
+    },
+})
+
+-- clang-format via conform owns C/C++ formatting
+vim.lsp.config("clangd", {
+    on_attach = function(client, _)
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
+    end,
+})
+
+-- Installs the servers; automatic_enable starts them via vim.lsp.enable().
+-- ruff is excluded: the ruff binary doubles as an LSP server, which would
+-- duplicate the diagnostics nvim-lint already produces with it.
+require("mason-lspconfig").setup({
     ensure_installed = servers,
-    automatic_installation = false,
-    handlers = {
-        -- The default handler (runs for every server unless overridden below)
-        function(server_name)
-            lspconfig[server_name].setup({
-                on_attach = on_attach,
-                on_init = on_init,
-                capabilities = capabilities,
-            })
-        end,
-
-        -- Custom overrides for specific servers
-        ["lua_ls"] = function()
-            lspconfig.lua_ls.setup({
-                on_attach = on_attach,
-                on_init = on_init,
-                capabilities = capabilities,
-                settings = {
-                    Lua = {
-                        diagnostics = { enable = false },
-                        workspace = {
-                            library = {
-                                vim.fn.expand("$VIMRUNTIME/lua"),
-                                vim.fn.expand("$VIMRUNTIME/lua/vim/lsp"),
-                                vim.fn.stdpath("data") .. "/lazy/ui/nvchad_types",
-                                vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy",
-                            },
-                            maxPreload = 100000,
-                            preloadFileSize = 10000,
-                        },
-                    },
-                },
-            })
-        end,
-
-        ["pyright"] = function()
-            lspconfig.pyright.setup({
-                on_attach = on_attach,
-                on_init = on_init,
-                capabilities = capabilities,
-                settings = {
-                    python = { analysis = { typeCheckingMode = "off" } },
-                },
-            })
-        end,
-
-        ["clangd"] = function()
-            lspconfig.clangd.setup({
-                on_attach = function(client, bufnr)
-                    client.server_capabilities.documentFormattingProvider = false
-                    client.server_capabilities.documentRangeFormattingProvider = false
-                    on_attach(client, bufnr)
-                end,
-                on_init = on_init,
-                capabilities = capabilities,
-            })
-        end,
+    automatic_enable = {
+        exclude = { "ruff" },
     },
 })
