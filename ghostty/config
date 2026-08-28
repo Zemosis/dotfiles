@@ -1,0 +1,42 @@
+# Ghostty Configuration File
+# Location: /home/turuu/.config/ghostty/config
+#
+# Documentation: https://ghostty.org/docs/config
+# Reload config: Ctrl + Shift + ,
+
+# -----------------------------------------------------------------------------
+# Window & Layout
+# -----------------------------------------------------------------------------
+# Initial window dimensions in character columns and lines
+window-width = 130
+window-height = 35
+
+# Inner window padding in pixels
+window-padding-x = 2
+window-padding-y = 2
+
+# -----------------------------------------------------------------------------
+# Typography
+# -----------------------------------------------------------------------------
+font-family = "JetBrainsMono Nerd Font"
+font-size = 13
+
+# Explicit style variants
+font-family-bold = "JetBrainsMono Nerd Font"
+font-family-italic = "JetBrainsMono Nerd Font"
+font-family-bold-italic = "JetBrainsMonoNerd Font Mono"
+
+# -----------------------------------------------------------------------------
+# Scrolling & History
+# -----------------------------------------------------------------------------
+# Maximum scrollback lines retained in memory
+scrollback-limit = 10000
+
+# Multiplier applied to mouse wheel scrolling steps
+mouse-scroll-multiplier = 3
+
+# -----------------------------------------------------------------------------
+# Theme & Color Scheme
+# -----------------------------------------------------------------------------
+# Set to "gruvbox-dark-soft-cont" or "gruvbox-dark"
+theme = "gruvbox-dark"
