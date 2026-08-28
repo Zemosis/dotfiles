@@ -22,6 +22,70 @@ return {
             require("configs.slimv")
         end,
     },
+    -- ":" / "/" completion (NvChad sets nvim-cmp up for insert mode only)
+    {
+        "hrsh7th/cmp-cmdline",
+        event = "CmdlineEnter",
+        dependencies = { "hrsh7th/nvim-cmp" },
+        config = function()
+            require("configs.cmdline")
+        end,
+    },
+
+    -- which-key ships icons for its own rules only; these give our custom
+    -- maps the same treatment (doc-only entries -- the keymaps themselves
+    -- live in mappings.lua and configs/molten.lua)
+    {
+        "folke/which-key.nvim",
+        opts = {
+            spec = {
+                { "<leader>s", icon = { icon = "", color = "yellow" } },
+                { "<leader>j", group = "jupyter", icon = { icon = "", color = "green" } },
+                { "<leader>ji", icon = { icon = "", color = "green" } },
+                { "<leader>jr", icon = { icon = "", color = "green" } },
+                { "<leader>jl", icon = { icon = "", color = "green" } },
+                { "<leader>jv", icon = { icon = "", color = "green" } },
+                { "<leader>jc", icon = { icon = "", color = "azure" } },
+                { "<leader>ja", icon = { icon = "", color = "green" } },
+                { "<leader>jA", icon = { icon = "", color = "azure" } },
+                { "<leader>jo", icon = { icon = "", color = "cyan" } },
+                { "<leader>jh", icon = { icon = "", color = "grey" } },
+                { "<leader>je", icon = { icon = "", color = "cyan" } },
+                { "<leader>jn", icon = { icon = "", color = "blue" } },
+                { "<leader>jp", icon = { icon = "", color = "blue" } },
+                { "<leader>jk", icon = { icon = "", color = "orange" } },
+                { "<leader>jR", icon = { icon = "", color = "red" } },
+                { "<leader>jd", icon = { icon = "", color = "red" } },
+                { "<leader>jx", icon = { icon = "", color = "purple" } },
+                { "<leader>jm", icon = { icon = "", color = "purple" } },
+                { "<leader>ts", icon = { icon = "", color = "yellow" } },
+            },
+        },
+    },
+
+    -- Jupyter kernel inside the editor: run "# %%" cells, output (including
+    -- matplotlib images) renders under the cell. See configs/molten.lua.
+    {
+        "benlubas/molten-nvim",
+        version = "^1.0.0",
+        ft = "python",
+        build = ":UpdateRemotePlugins",
+        dependencies = { "3rd/image.nvim" },
+        -- init, not config: molten reads its g: vars while loading
+        init = function()
+            require("configs.molten")
+        end,
+    },
+    {
+        "3rd/image.nvim",
+        ft = "python",
+        opts = {
+            backend = "kitty", -- ghostty speaks the kitty graphics protocol
+            processor = "magick_cli", -- shells out to ImageMagick; no luarock
+            integrations = {}, -- molten drives it; no markdown auto-render
+            max_width_window_percentage = 100,
+        },
+    },
     {
         "nvim-treesitter/nvim-treesitter",
         branch = "main",

@@ -21,6 +21,8 @@ Java, web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | `lua/configs/lint.lua` | linters |
 | `lua/configs/treesitter.lua` | parsers + treesitter indent |
 | `lua/configs/slimv.lua` | Common Lisp (slimv/paredit/which-key labels) |
+| `lua/configs/molten.lua` | Jupyter cells (molten settings, cell helper, keymaps) |
+| `lua/configs/cmdline.lua` | `:` and `/` completion (nvim-cmp) |
 
 ## Language tooling
 
@@ -54,11 +56,13 @@ Java, web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | `Space l` … | Paredit commands (Lisp buffers) |
 
 Press `Space` or `,` and pause — which-key shows every available key.
+Typing in `:` or `/` pops up completions as you go (`Tab` / `S-Tab` to pick,
+`C-e` to dismiss).
 
 ## Plugins
 
 **Added on top of NvChad:** nvim-lspconfig + mason-lspconfig · SchemaStore.nvim ·
-conform.nvim ·
+molten-nvim + image.nvim · cmp-cmdline · conform.nvim ·
 nvim-lint · nvim-treesitter (main branch) · nvim-ts-autotag · nvim-autopairs ·
 trouble.nvim · slimv (Common Lisp).
 
@@ -178,6 +182,89 @@ Packages install to `~/quicklisp` once and load from disk afterwards.
 Help navigation: `Ctrl-]` follow link · `Ctrl-o` back · `/text` search ·
 `:q` close. Language docs: `,h` on any symbol (HyperSpec), plus
 [Practical Common Lisp](https://gigamonkeys.com/book/).
+
+## Python notebooks (molten)
+
+Run `# %%` cells against a Jupyter kernel without leaving the editor; output,
+including matplotlib plots, renders in a window under the cell.
+
+```python
+# %%
+import pandas as pd
+df = pd.read_csv("data.csv")   # slow -- run once, stays in memory
+
+# %%
+df.describe()                  # re-run freely against the loaded frame
+```
+
+`Space j i` boots the kernel, picking the activated conda env when a
+kernelspec of that name exists and otherwise prompting with the list.
+
+Pyright is separate from the kernel and resolves imports from the interpreter
+it finds at startup, so either `conda activate <env>` before nvim, or drop a
+`pyrightconfig.json` in the project root and it works from a cold shell:
+
+```json
+{ "venvPath": "/home/turuu/anaconda3/envs", "venv": "cs484" }
+```
+
+Conda envs live under `~/anaconda3/envs` no matter where the code is; nothing
+needs to sit next to the project.
+
+| Keys | Action |
+|---|---|
+| `Space ji` | init kernel (cs484) |
+| `Space jr` | run cell under cursor · `Space jl` run line |
+| `Space jv` | run visual selection |
+| `Space ja` | run every cell in the file |
+| `Space jc` / `Space jA` | re-run cell / re-run already-evaluated cells |
+| `Space jo` / `Space jh` | show / hide output |
+| `Space je` | enter output window (to scroll) |
+| `Space jn` / `Space jp` | next / previous cell |
+| `Space jk` / `Space jR` | interrupt / restart kernel |
+| `Space jd` | delete cell output |
+| `Space jx` / `Space jm` | export / import outputs to a `.ipynb` |
+
+Export is **not** automatic and does **not** create the notebook: molten opens
+an existing `.ipynb`, matches its code cells against the executed ones, and
+writes the outputs in. Create the notebook first with jupytext (installed in
+the `cs484` env):
+
+```sh
+jupytext --to notebook hw1.py     # hw1.py -> hw1.ipynb, no outputs yet
+```
+
+then `Space jx` in nvim fills in the outputs. `jupytext --sync` keeps the
+pair up to date afterwards.
+
+Cell boundaries are found by `configs/molten.lua` (molten itself only
+evaluates motions and selections).
+
+Requirements, all already set up: `pynvim` + `jupyter_client` in the
+provider venv at `~/.venvs/nvim` -- `pynvim`, `jupyter_client` and
+`nbformat` (the last only for `.ipynb` import/export)
+(`vim.g.python3_host_prog` points there --
+**not** the system python and **not** the conda env, because `conda activate`
+exports `PYTHONNOUSERSITE` into nvim and would hide `--user` packages),
+ImageMagick, `set -g allow-passthrough on` in `~/.tmux.conf` so image escapes
+reach ghostty, a terminal that speaks the kitty graphics protocol, and
+`rplugin` left **enabled** in `configs/lazy.lua` -- molten is a remote plugin.
+
+Register a kernel for a new conda env with:
+
+```sh
+conda activate <env>
+python -m ipykernel install --user --name <env> --display-name "Python (<env>)"
+```
+
+Rebuild the provider venv with:
+
+```sh
+python3 -m venv ~/.venvs/nvim && ~/.venvs/nvim/bin/pip install pynvim jupyter_client
+```
+
+After changing `python3_host_prog`, open a `.py` file and run
+`:UpdateRemotePlugins` -- the manifest records the host.
 
 ## Java
 

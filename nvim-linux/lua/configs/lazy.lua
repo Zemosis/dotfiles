@@ -34,7 +34,8 @@ return {
         "zip",
         "zipPlugin",
         "tutor",
-        "rplugin",
+        -- "rplugin" is NOT disabled: molten-nvim is a remote plugin and
+        -- needs :UpdateRemotePlugins / the python3 host to work
         "syntax",
         "synmenu",
         "optwin",
