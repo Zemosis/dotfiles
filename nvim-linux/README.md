@@ -1,7 +1,7 @@
 # Neovim Config
 
 Personal Neovim setup built on **NvChad v2.5**, tuned for C/C++, Python, Lua,
-web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
+Java, web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 
 - Neovim 0.11.5 · lazy.nvim · gruvbox theme · 4-space indents
 - Format on save (conform.nvim) · lint on open/save/insert-leave (nvim-lint)
@@ -13,7 +13,7 @@ web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 |---|---|
 | `init.lua` | bootstrap lazy.nvim + NvChad |
 | `lua/chadrc.lua` | NvChad theme/UI settings |
-| `lua/options.lua` | editor options (indent, folding, python provider) |
+| `lua/options.lua` | editor options (indent, folding, whitespace, python provider) |
 | `lua/mappings.lua` | custom keymaps |
 | `lua/plugins/init.lua` | plugin list |
 | `lua/configs/lspconfig.lua` | LSP servers + per-server overrides |
@@ -27,13 +27,14 @@ web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | Language | LSP | Linter | Formatter |
 |---|---|---|---|
 | Python | pyright | ruff | ruff_format (100 cols) |
-| C / C++ | clangd (clang-tidy built in) | — | clang-format (custom style) |
+| C / C++ | clangd (`--clang-tidy`) | — | clang-format (custom style) |
 | Lua | lua_ls (diagnostics off) | selene | stylua |
+| Java | jdtls | — | google-java-format (`--aosp`, 4 spaces) |
 | TS / JS / React | ts_ls | eslint_d | prettier |
 | Vue | vue_ls + ts_ls (`@vue/typescript-plugin`) | eslint_d | prettier |
 | Svelte | svelte | eslint_d | prettier |
 | HTML / CSS | html, cssls, emmet_ls, tailwindcss | — | prettier |
-| JSON / YAML / Markdown | jsonls (JSON) | — | prettier |
+| JSON / YAML / Markdown | jsonls + SchemaStore (JSON) | — | prettier |
 | Common Lisp | — (SWANK instead) | — | slimv indentation |
 
 "—" under Linter means the LSP already provides diagnostics.
@@ -46,6 +47,7 @@ web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | `jk` (insert) | escape |
 | `Space s` | replace word under cursor everywhere (prefills `:%s`) |
 | `Space s` (visual) | replace selection everywhere |
+| `Space ts` | toggle whitespace dots (`:set list!`) |
 | `gcc` / `gc` | comment (built-in) |
 | `Space ra` | LSP rename symbol (project-wide) |
 | `,` … | Slimv commands (Lisp buffers) |
@@ -55,7 +57,8 @@ Press `Space` or `,` and pause — which-key shows every available key.
 
 ## Plugins
 
-**Added on top of NvChad:** nvim-lspconfig + mason-lspconfig · conform.nvim ·
+**Added on top of NvChad:** nvim-lspconfig + mason-lspconfig · SchemaStore.nvim ·
+conform.nvim ·
 nvim-lint · nvim-treesitter (main branch) · nvim-ts-autotag · nvim-autopairs ·
 trouble.nvim · slimv (Common Lisp).
 
@@ -176,6 +179,19 @@ Help navigation: `Ctrl-]` follow link · `Ctrl-o` back · `/text` search ·
 `:q` close. Language docs: `,h` on any symbol (HyperSpec), plus
 [Practical Common Lisp](https://gigamonkeys.com/book/).
 
+## Java
+
+`jdtls` is used through nvim-lspconfig's bundled config — no nvim-jdtls. It
+detects a project from `pom.xml` / `build.gradle` / `.git` and caches its index
+in `~/.cache/nvim/jdtls/workspace`, so the **first open in a new project takes
+about a minute** while the JVM starts and indexes; later opens are fast. If a
+project's diagnostics go stale, delete that workspace directory to force a
+re-index.
+
+No linter: jdtls already reports compiler errors, unused imports and type
+mismatches. checkstyle is style-only and refuses to run without a per-project
+config, so it is left out.
+
 ## Maintenance
 
 - `:Lazy sync` — update plugins · `:Mason` — manage LSP/lint/format tools ·
@@ -184,6 +200,9 @@ Help navigation: `Ctrl-]` follow link · `Ctrl-o` back · `/text` search ·
   supporting Neovim 0.11. After upgrading to Neovim 0.12+: delete the
   `commit = ...` line in `lua/plugins/init.lua`, then `:Lazy sync` and
   `:TSUpdate`.
+- **System packages this config expects:** a JDK (21) for jdtls, `maven` for
+  Java dependency resolution, `ripgrep` for telescope live-grep, and `fd` for
+  fast gitignore-aware file finding.
 - SBCL is a user-space install. To switch to the system package:
   `sudo dnf install sbcl`, then remove `~/.local/bin/sbcl`,
   `~/.local/lib/sbcl`, and `~/.local/share/man/man1/sbcl.1`.

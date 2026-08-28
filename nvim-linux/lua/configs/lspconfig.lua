@@ -15,6 +15,7 @@ local servers = {
     "emmet_ls",
     "vue_ls",
     "svelte",
+    "jdtls",
 }
 
 -- Vue works in hybrid mode: vue_ls covers the template/CSS parts while ts_ls
@@ -54,8 +55,23 @@ vim.lsp.config("lua_ls", {
     },
 })
 
--- clang-format via conform owns C/C++ formatting
+-- jsonls only checks syntax on its own; SchemaStore supplies the schema
+-- catalog so package.json, tsconfig.json, workflows etc. get key/type
+-- validation and completion.
+vim.lsp.config("jsonls", {
+    settings = {
+        json = {
+            schemas = require("schemastore").json.schemas(),
+            validate = { enable = true },
+        },
+    },
+})
+
+-- clang-format via conform owns C/C++ formatting.
+-- clangd bundles clang-tidy but keeps it off by default, so --clang-tidy is
+-- needed for the static-analysis checks on top of compiler diagnostics.
 vim.lsp.config("clangd", {
+    cmd = { "clangd", "--clang-tidy", "--background-index" },
     on_attach = function(client, _)
         client.server_capabilities.documentFormattingProvider = false
         client.server_capabilities.documentRangeFormattingProvider = false

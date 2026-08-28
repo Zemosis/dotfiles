@@ -38,7 +38,12 @@ return {
     {
         "neovim/nvim-lspconfig",
         event = { "BufReadPre", "BufNewFile" },
-        dependencies = { "williamboman/mason-lspconfig.nvim" },
+        dependencies = {
+            "williamboman/mason-lspconfig.nvim",
+            -- JSON schema catalog for jsonls (data only, no runtime cost).
+            -- version = false: the repo's tags are stale, master is the release.
+            { "b0o/SchemaStore.nvim", version = false },
+        },
         config = function()
             require("nvchad.configs.lspconfig").defaults()
             require("configs.lspconfig")

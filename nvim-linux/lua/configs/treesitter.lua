@@ -14,6 +14,7 @@ local parsers = {
     "commonlisp",
     "cpp",
     "fish",
+    "java",
     "lua",
     "luadoc",
     "make",

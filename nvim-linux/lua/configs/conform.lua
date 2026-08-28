@@ -14,6 +14,7 @@ local options = {
         yaml = { "prettier" },
         markdown = { "prettier" },
         vue = { "prettier" },
+        java = { "google-java-format" },
     },
 
     formatters = {
@@ -43,6 +44,11 @@ local options = {
         },
         prettier = {
             command = "prettier",
+        },
+        -- --aosp is Google style at 4-space indent (the default is 2), which
+        -- matches the indent used everywhere else in this config
+        ["google-java-format"] = {
+            prepend_args = { "--aosp" },
         },
     },
 

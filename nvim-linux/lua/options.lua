@@ -12,6 +12,13 @@ o.shiftwidth = 4
 o.tabstop = 4
 o.softtabstop = 4
 
+-- Show indentation as dots. "lead" covers only the whitespace before the
+-- first non-blank char, so spaces inside code stay invisible ("space" would
+-- dot every one of them). tab/nbsp are here to make characters that look
+-- like spaces but aren't stand out -- this config is spaces-only.
+o.list = true
+o.listchars = "lead:\u{b7},trail:\u{b7},tab:\u{bb} ,nbsp:\u{2423}"
+
 -- o.cursorlineopt ='both' -- to enable cursorline!
 
 -- set filetype for .CBL COBOL files.

@@ -6,6 +6,7 @@ local map = vim.keymap.set
 map("n", ";", ":", { desc = "CMD enter command mode" })
 map("i", "jk", "<ESC>")
 map("t", "<leader>x", "<cmd>bd!<cr>", { desc = "Close terminal" })
+map("n", "<leader>ts", "<cmd>set list!<cr>", { desc = "Toggle whitespace dots" })
 
 -- Replace all occurrences: word under cursor (normal) or selection (visual).
 -- Prefills :%s/…//gI with the cursor at the replacement spot; \< \> match
