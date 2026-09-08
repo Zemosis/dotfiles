@@ -1,10 +1,9 @@
 local options = {
     formatters_by_ft = {
         lua = { "stylua" },
-        c_cpp = { "clang-format" },
         c = { "clang-format" },
         cpp = { "clang-format" },
-        python = { "black" },
+        python = { "ruff_format" },
         javascript = { "prettier" },
         javascriptreact = { "prettier" },
         typescript = { "prettier" },
@@ -15,7 +14,7 @@ local options = {
         yaml = { "prettier" },
         markdown = { "prettier" },
         vue = { "prettier" },
-        -- r = { "styler" }, -- Uncomment if you want R on Windows
+        java = { "google-java-format" },
     },
 
     formatters = {
@@ -31,18 +30,31 @@ local options = {
                     .. "}",
             },
         },
-        black = {
-            prepend_args = { "--fast", "--line-length", "100" },
+        ruff_format = {
+            -- flags must come after the "format" subcommand, so override args fully
+            args = {
+                "format",
+                "--line-length",
+                "100",
+                "--force-exclude",
+                "--stdin-filename",
+                "$FILENAME",
+                "-",
+            },
         },
         prettier = {
-            command = "prettierd",
-            fallback = "prettier",
+            command = "prettier",
+        },
+        -- --aosp is Google style at 4-space indent (the default is 2), which
+        -- matches the indent used everywhere else in this config
+        ["google-java-format"] = {
+            prepend_args = { "--aosp" },
         },
     },
 
     format_on_save = {
         timeout_ms = 5000,
-        lsp_fallback = true,
+        lsp_format = "fallback",
     },
 }
 
