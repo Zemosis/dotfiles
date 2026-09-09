@@ -23,6 +23,7 @@ Java, web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | `lua/configs/slimv.lua` | Common Lisp (slimv/paredit/which-key labels) |
 | `lua/configs/molten.lua` | Jupyter cells (molten settings, cell helper, keymaps) |
 | `lua/configs/cmdline.lua` | `:` and `/` completion (nvim-cmp) |
+| `lua/configs/whichkey.lua` | which-key categories + sorter for the Lisp menu |
 
 ## Language tooling
 
@@ -37,7 +38,7 @@ Java, web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | Svelte | svelte | eslint_d | prettier |
 | HTML / CSS | html, cssls, emmet_ls, tailwindcss | — | prettier |
 | JSON / YAML / Markdown | jsonls + SchemaStore (JSON) | — | prettier |
-| Common Lisp | — (SWANK instead) | — | slimv indentation |
+| Common Lisp | — (SWANK instead) | — (SBCL compiler) | slimv indentation |
 
 "—" under Linter means the LSP already provides diagnostics.
 
@@ -55,14 +56,17 @@ Java, web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | `,` … | Slimv commands (Lisp buffers) |
 | `Space l` … | Paredit commands (Lisp buffers) |
 
-Press `Space` or `,` and pause — which-key shows every available key.
+Press `Space` or `,` and pause — which-key shows every available key. The
+`,` menu is grouped by category (Eval, Compile, REPL, Docs, Macro, Debug,
+Profile, Threads, Edit) rather than by key, via a custom sorter in
+`configs/whichkey.lua`.
 Typing in `:` or `/` pops up completions as you go (`Tab` / `S-Tab` to pick,
 `C-e` to dismiss).
 
 ## Plugins
 
 **Added on top of NvChad:** nvim-lspconfig + mason-lspconfig · SchemaStore.nvim ·
-molten-nvim + image.nvim · cmp-cmdline · conform.nvim ·
+molten-nvim + image.nvim · cmp-cmdline + cmp-omni · conform.nvim ·
 nvim-lint · nvim-treesitter (main branch) · nvim-ts-autotag · nvim-autopairs ·
 trouble.nvim · slimv (Common Lisp).
 
@@ -135,6 +139,10 @@ split, `commonlisp` treesitter parser.
 3. `,d` evals the function under cursor · `,e` current expression ·
    `,b` whole buffer · `,r` selection.
 4. Switch windows with `Ctrl-w w`, type directly into the REPL in insert mode.
+
+Completion comes from the live image: slimv sets
+`omnifunc=SlimvOmniComplete` and cmp-omni routes it into the normal
+completion popup, so it needs a connected REPL (`,c`) to return anything.
 
 ### Everyday Slimv keys
 

@@ -22,6 +22,28 @@ return {
             require("configs.slimv")
         end,
     },
+    -- Lisp completion: slimv sets omnifunc=SlimvOmniComplete (backed by the
+    -- live SWANK image), but nvim-cmp has no omni source, so it was only
+    -- reachable via <C-x><C-o>. This routes it into the normal cmp popup.
+    {
+        "hrsh7th/cmp-omni",
+        ft = "lisp",
+        dependencies = { "hrsh7th/nvim-cmp" },
+        config = function()
+            local cmp = require("cmp")
+            cmp.setup.filetype("lisp", {
+                sources = cmp.config.sources({
+                    -- keyword_length 3: omni asks SWANK over a socket, so
+                    -- don't fire it on every single character
+                    { name = "omni", keyword_length = 3 },
+                }, {
+                    { name = "buffer" },
+                    { name = "async_path" },
+                }),
+            })
+        end,
+    },
+
     -- ":" / "/" completion (NvChad sets nvim-cmp up for insert mode only)
     {
         "hrsh7th/cmp-cmdline",
@@ -38,27 +60,39 @@ return {
     {
         "folke/which-key.nvim",
         opts = {
+            -- group the Lisp menu by category instead of by key; inert for
+            -- every menu that does not use "Category · …" descriptions
+            sort = {
+                "local",
+                "order",
+                "group",
+                function(item)
+                    return require("configs.whichkey").sort(item)
+                end,
+                "alphanum",
+                "mod",
+            },
             spec = {
-                { "<leader>s", icon = { icon = "", color = "yellow" } },
-                { "<leader>j", group = "jupyter", icon = { icon = "", color = "green" } },
-                { "<leader>ji", icon = { icon = "", color = "green" } },
-                { "<leader>jr", icon = { icon = "", color = "green" } },
-                { "<leader>jl", icon = { icon = "", color = "green" } },
-                { "<leader>jv", icon = { icon = "", color = "green" } },
-                { "<leader>jc", icon = { icon = "", color = "azure" } },
-                { "<leader>ja", icon = { icon = "", color = "green" } },
-                { "<leader>jA", icon = { icon = "", color = "azure" } },
-                { "<leader>jo", icon = { icon = "", color = "cyan" } },
-                { "<leader>jh", icon = { icon = "", color = "grey" } },
-                { "<leader>je", icon = { icon = "", color = "cyan" } },
-                { "<leader>jn", icon = { icon = "", color = "blue" } },
-                { "<leader>jp", icon = { icon = "", color = "blue" } },
-                { "<leader>jk", icon = { icon = "", color = "orange" } },
-                { "<leader>jR", icon = { icon = "", color = "red" } },
-                { "<leader>jd", icon = { icon = "", color = "red" } },
-                { "<leader>jx", icon = { icon = "", color = "purple" } },
-                { "<leader>jm", icon = { icon = "", color = "purple" } },
-                { "<leader>ts", icon = { icon = "", color = "yellow" } },
+                { "<leader>s", icon = { icon = "\u{f0ec}", color = "yellow" } },
+                { "<leader>j", group = "jupyter", icon = { icon = "\u{f0e7}", color = "green" } },
+                { "<leader>ji", icon = { icon = "\u{f135}", color = "green" } },
+                { "<leader>jr", icon = { icon = "\u{f04b}", color = "green" } },
+                { "<leader>jl", icon = { icon = "\u{f04b}", color = "green" } },
+                { "<leader>jv", icon = { icon = "\u{f04b}", color = "green" } },
+                { "<leader>jc", icon = { icon = "\u{f021}", color = "azure" } },
+                { "<leader>ja", icon = { icon = "\u{f04b}", color = "green" } },
+                { "<leader>jA", icon = { icon = "\u{f021}", color = "azure" } },
+                { "<leader>jo", icon = { icon = "\u{f06e}", color = "cyan" } },
+                { "<leader>jh", icon = { icon = "\u{f070}", color = "grey" } },
+                { "<leader>je", icon = { icon = "\u{f090}", color = "cyan" } },
+                { "<leader>jn", icon = { icon = "\u{f078}", color = "blue" } },
+                { "<leader>jp", icon = { icon = "\u{f077}", color = "blue" } },
+                { "<leader>jk", icon = { icon = "\u{f04d}", color = "orange" } },
+                { "<leader>jR", icon = { icon = "\u{f0e2}", color = "red" } },
+                { "<leader>jd", icon = { icon = "\u{f1f8}", color = "red" } },
+                { "<leader>jx", icon = { icon = "\u{f093}", color = "purple" } },
+                { "<leader>jm", icon = { icon = "\u{f019}", color = "purple" } },
+                { "<leader>ts", icon = { icon = "\u{f0c9}", color = "yellow" } },
             },
         },
     },
