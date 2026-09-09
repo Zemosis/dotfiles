@@ -78,6 +78,35 @@ vim.lsp.config("clangd", {
     end,
 })
 
+-- jdtls resolves its classpath from the build file, so lspconfig's default
+-- roots it at pom.xml/build.gradle and gives each project its own -data dir.
+-- Formatting stays off because conform runs google-java-format instead.
+-- favoriteStaticMembers is what makes bare `assertEquals` completable in a
+-- test file: jdtls offers the static import rather than requiring it first.
+vim.lsp.config("jdtls", {
+    settings = {
+        java = {
+            format = { enabled = false },
+            signatureHelp = { enabled = true },
+            -- re-import when pom.xml/build.gradle changes instead of
+            -- prompting, so a new dependency resolves without a restart
+            configuration = { updateBuildConfiguration = "automatic" },
+            completion = {
+                favoriteStaticMembers = {
+                    "org.junit.jupiter.api.Assertions.*",
+                    "org.junit.jupiter.api.Assumptions.*",
+                    "org.junit.jupiter.api.DynamicTest.*",
+                    -- JUnit 4, for code following the SWE-437 slides
+                    "org.junit.Assert.*",
+                    "org.mockito.Mockito.*",
+                    "java.util.Objects.requireNonNull",
+                },
+            },
+            inlayHints = { parameterNames = { enabled = "literals" } },
+        },
+    },
+})
+
 -- Installs the servers; automatic_enable starts them via vim.lsp.enable().
 -- ruff is excluded: the ruff binary doubles as an LSP server, which would
 -- duplicate the diagnostics nvim-lint already produces with it.
