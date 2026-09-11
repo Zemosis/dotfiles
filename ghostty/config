@@ -8,8 +8,8 @@
 # Window & Layout
 # -----------------------------------------------------------------------------
 # Initial window dimensions in character columns and lines
-window-width = 130
-window-height = 35
+# window-width = 130
+# window-height = 35
 
 # Inner window padding in pixels
 window-padding-x = 2
