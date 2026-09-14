@@ -53,6 +53,7 @@ Java, web development (TypeScript/React, Vue, Svelte), and **Common Lisp**.
 | `Space ts` | toggle whitespace dots (`:set list!`) |
 | `gcc` / `gc` | comment (built-in) |
 | `Space ra` | LSP rename symbol (project-wide) |
+| `Space tt` / `:JavaTest` | run the JUnit tests for the current Java file |
 | `,` … | Slimv commands (Lisp buffers) |
 | `Space l` … | Paredit commands (Lisp buffers) |
 
@@ -286,6 +287,33 @@ re-index.
 No linter: jdtls already reports compiler errors, unused imports and type
 mismatches. checkstyle is style-only and refuses to run without a per-project
 config, so it is left out.
+
+**No project file needed.** A folder with no `pom.xml` / `build.gradle` /
+`.project` / `.git` is rooted at the file's own folder and opened as an
+unmanaged project whose classpath is `lib/**/*.jar` plus JUnit 4 from
+`~/.m2` — so a loose `FooTest.java` gets `@Test` / `assertEquals`
+completion and auto-imports with nothing else in the folder. (JUnit 4 is in
+`~/.m2` because Maven downloaded it once; `mvn dependency:get
+-Dartifact=junit:junit:4.13.2` restores it.) For JUnit 5 without a build
+file, drop `junit-platform-console-standalone-*.jar` into `lib/`.
+
+### Running tests
+
+`Space tt` (or `:JavaTest`) saves all buffers and runs the current test
+class in a bottom terminal; from `Foo.java` it runs the sibling
+`FooTest.java`. Pressing it again reruns the class in the same terminal.
+
+| Project has | Runs |
+|---|---|
+| `pom.xml` | `mvn test -Dtest=<class>` (`./mvnw` if present) |
+| `build.gradle(.kts)` | `gradle test --tests <class>` (`./gradlew` if present) |
+| nothing / `.classpath` | `javac` into `~/.cache/nvim/javatest/…`, then JUnit 4 `JUnitCore` (or the JUnit 5 console launcher when its jar is in `lib/`) |
+
+The last case never writes into the project: classes go to the cache, not
+`bin/`. The classpath is the `.classpath` `lib` entries plus `lib/*.jar`,
+falling back to JUnit 4. javac runs with `-sourcepath`, so only classes the
+test references are compiled and an unrelated broken file doesn't block the
+run.
 
 ## Maintenance
 
