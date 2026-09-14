@@ -84,6 +84,25 @@ vim.lsp.config("clangd", {
 -- favoriteStaticMembers is what makes bare `assertEquals` completable in a
 -- test file: jdtls offers the static import rather than requiring it first.
 vim.lsp.config("jdtls", {
+    -- lspconfig's default markers plus .project, so plain Eclipse projects
+    -- (no pom.xml/build.gradle, e.g. SWE-437 assignments with a hand-written
+    -- .project/.classpath) get a root and their own -data dir. Without a root,
+    -- jdtls falls back to a shared workspace and ignores .classpath entirely.
+    root_markers = {
+        { "mvnw", "gradlew", "settings.gradle", "settings.gradle.kts", ".git" },
+        { "build.xml", "pom.xml", "build.gradle", "build.gradle.kts", ".project" },
+    },
+    -- A folder with none of those markers would still get no root, so the
+    -- buffer opens as a "non-project file" (syntax errors only). Falling back
+    -- to the file's folder makes it an unmanaged project instead, which is
+    -- what referencedLibraries below applies to.
+    root_dir = function(bufnr, on_dir)
+        local fname = vim.api.nvim_buf_get_name(bufnr)
+        if not vim.startswith(fname, "/") then
+            return -- jdt:// class-file buffers; lspconfig's jdtls can't serve them
+        end
+        on_dir(vim.fs.root(bufnr, vim.lsp.config.jdtls.root_markers) or vim.fs.dirname(fname))
+    end,
     settings = {
         java = {
             format = { enabled = false },
@@ -103,6 +122,15 @@ vim.lsp.config("jdtls", {
                 },
             },
             inlayHints = { parameterNames = { enabled = "literals" } },
+            -- classpath of unmanaged folders (no pom.xml/.classpath): jdtls's
+            -- default lib/**/*.jar plus JUnit 4, so a loose FooTest.java
+            -- resolves @Test without any project file
+            project = {
+                referencedLibraries = vim.list_extend(
+                    { "lib/**/*.jar" },
+                    require("configs.javatest").junit4_jars
+                ),
+            },
         },
     },
 })
