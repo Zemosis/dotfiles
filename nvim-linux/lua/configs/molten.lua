@@ -163,7 +163,14 @@ local menu = {
     } },
 }
 
+-- The FileType autocmd and the ft-lazy load below can both fire for one
+-- buffer; vim.keymap.set tolerates that but wk.add accumulates duplicates.
 local function attach(buf)
+    if vim.b[buf].molten_attached then
+        return
+    end
+    vim.b[buf].molten_attached = true
+
     local wkc = require("configs.whichkey")
     local spec = { buffer = buf }
 
