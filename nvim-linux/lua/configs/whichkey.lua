@@ -29,29 +29,42 @@ M.categories = {
     Notebook = { rank = 15, icon = "\u{f02d}", color = "purple" },
 }
 
+-- Sort keys by description, filled in by M.entries. which-key's spec has no
+-- user-settable "order" field, so the sorter below is the only hook for
+-- ordering *within* a category; this table carries the declaration order
+-- across to it.
+M.order = {}
+
 -- which-key sorters are key extractors, not comparators: the view compares
 -- sort(a) < sort(b). Untagged entries all return the same value, so this is
 -- inert in every menu that does not use the "Category · …" convention.
 function M.sort(item)
-    local cat = (item.desc or ""):match("^(%a+)%s·")
+    local desc = item.desc or ""
+    local known = M.order[desc]
+    if known then
+        return known
+    end
+    -- tagged by hand rather than through M.entries: order within the group
+    -- falls back to which-key's own sorters
+    local cat = desc:match("^(%a+)%s·")
     local entry = cat and M.categories[cat]
-    return entry and entry.rank or 99
+    return entry and entry.rank * 100 or 9999
 end
 
 -- Build which-key spec entries for a list of { key, text[, mode] } under one
 -- category, e.g. M.entries("Eval", ",", { { "d", "defun" } }).
--- "order" sits ahead of M.sort in the which-key sort list, so setting it
--- here decides both the group order (via rank) and the order *within* a
--- group (via the position in `maps`), instead of falling back to alphanum.
+-- Records each description's sort key in M.order, so the menu shows the maps
+-- in the order they are declared here rather than alphanumerically.
 function M.entries(category, prefix, maps)
     local cat = M.categories[category]
     local out = {}
     for i, m in ipairs(maps) do
+        local desc = category .. M.SEP .. m[2]
+        M.order[desc] = cat.rank * 100 + i
         out[#out + 1] = {
             prefix .. m[1],
-            desc = category .. M.SEP .. m[2],
+            desc = desc,
             icon = { icon = cat.icon, color = cat.color },
-            order = cat.rank * 100 + i,
             mode = m[3],
         }
     end
