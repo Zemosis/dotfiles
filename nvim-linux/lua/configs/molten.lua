@@ -5,21 +5,10 @@
 -- configs/lazy.lua (molten is a remote plugin).
 
 vim.g.molten_image_provider = "image.nvim"
+vim.g.molten_auto_open_output = true
 vim.g.molten_output_win_max_height = 20
 vim.g.molten_wrap_output = true
 vim.g.molten_virt_lines_off_by_1 = true
-
--- Two ways to show output, swapped at runtime by <leader>jt:
---   virtual text -- drawn below the cell and stays there once you move away
---   floating window -- follows the cursor, only visible inside the cell
--- Start in virtual text; "both" keeps matplotlib images rendering in either
--- mode (they default to the float only).
-local VIRT_TEXT_DEFAULT = true
-
-vim.g.molten_virt_text_output = VIRT_TEXT_DEFAULT
-vim.g.molten_virt_text_max_lines = 20
-vim.g.molten_image_location = "both"
-vim.g.molten_auto_open_output = not VIRT_TEXT_DEFAULT
 
 -- Molten evaluates motions/selections; it has no notion of "# %%" cells, so
 -- find the surrounding markers and hand the range to MoltenEvaluateVisual.
@@ -141,31 +130,6 @@ local function init_kernel()
     end
 end
 
--- Molten caches its options at load (it is a remote plugin), so flipping a
--- g: var after the fact does nothing -- MoltenUpdateOption is the supported
--- way in. Turning virt text *on* redraws every existing output on the next
--- update; turning it *off* only stops new ones, so virt text already on
--- screen sticks around until that cell is re-run (<leader>jc) or its output
--- deleted (<leader>jd). Molten exposes no "clear all virt text" call.
-local virt_text = VIRT_TEXT_DEFAULT
-
-local function toggle_output_mode()
-    virt_text = not virt_text
-    local ok = pcall(function()
-        vim.fn.MoltenUpdateOption("virt_text_output", virt_text)
-        vim.fn.MoltenUpdateOption("auto_open_output", not virt_text)
-        vim.fn.MoltenUpdateInterface()
-    end)
-    if not ok then
-        virt_text = not virt_text -- no kernel yet; leave the state alone
-        vim.notify("Molten: no kernel running (<leader>ji first)", vim.log.levels.WARN)
-        return
-    end
-    vim.notify(
-        "Molten output: " .. (virt_text and "virtual text (stays)" or "floating window (follows cursor)")
-    )
-end
-
 -- Grouped by purpose, not by key: configs.whichkey turns the category and
 -- the position in each list into which-key's sort order, so the menu reads
 -- kernel -> run -> output -> move -> notebook.
@@ -184,7 +148,6 @@ local menu = {
         { "A", "Re-run evaluated cells", "<cmd>MoltenReevaluateAll<cr>" },
     } },
     { "Output", {
-        { "t", "Toggle virtual text / float", toggle_output_mode },
         { "o", "Show", "<cmd>MoltenShowOutput<cr>" },
         { "h", "Hide", "<cmd>MoltenHideOutput<cr>" },
         { "e", "Enter (scroll)", "<cmd>noautocmd MoltenEnterOutput<cr>" },
