@@ -5,11 +5,6 @@ return {
         config = true,
     },
     {
-        "windwp/nvim-autopairs",
-        event = "InsertEnter",
-        config = true,
-    },
-    {
         "folke/trouble.nvim",
         cmd = "Trouble",
         opts = {},
