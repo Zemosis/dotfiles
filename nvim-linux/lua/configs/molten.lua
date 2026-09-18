@@ -5,10 +5,21 @@
 -- configs/lazy.lua (molten is a remote plugin).
 
 vim.g.molten_image_provider = "image.nvim"
-vim.g.molten_auto_open_output = true
 vim.g.molten_output_win_max_height = 20
 vim.g.molten_wrap_output = true
 vim.g.molten_virt_lines_off_by_1 = true
+
+-- Two ways to show output, swapped at runtime by <leader>jt:
+--   virtual text -- drawn below the cell and stays there once you move away
+--   floating window -- follows the cursor, only visible inside the cell
+-- Start in virtual text; "both" keeps matplotlib images rendering in either
+-- mode (they default to the float only).
+local VIRT_TEXT_DEFAULT = true
+
+vim.g.molten_virt_text_output = VIRT_TEXT_DEFAULT
+vim.g.molten_virt_text_max_lines = 20
+vim.g.molten_image_location = "both"
+vim.g.molten_auto_open_output = not VIRT_TEXT_DEFAULT
 
 -- Molten evaluates motions/selections; it has no notion of "# %%" cells, so
 -- find the surrounding markers and hand the range to MoltenEvaluateVisual.
@@ -130,28 +141,87 @@ local function init_kernel()
     end
 end
 
-local function map(buf, lhs, rhs, desc, mode)
-    vim.keymap.set(mode or "n", lhs, rhs, { buffer = buf, desc = desc })
+-- Molten caches its options at load (it is a remote plugin), so flipping a
+-- g: var after the fact does nothing -- MoltenUpdateOption is the supported
+-- way in. Turning virt text *on* redraws every existing output on the next
+-- update; turning it *off* only stops new ones, so virt text already on
+-- screen sticks around until that cell is re-run (<leader>jc) or its output
+-- deleted (<leader>jd). Molten exposes no "clear all virt text" call.
+local virt_text = VIRT_TEXT_DEFAULT
+
+local function toggle_output_mode()
+    virt_text = not virt_text
+    local ok = pcall(function()
+        vim.fn.MoltenUpdateOption("virt_text_output", virt_text)
+        vim.fn.MoltenUpdateOption("auto_open_output", not virt_text)
+        vim.fn.MoltenUpdateInterface()
+    end)
+    if not ok then
+        virt_text = not virt_text -- no kernel yet; leave the state alone
+        vim.notify("Molten: no kernel running (<leader>ji first)", vim.log.levels.WARN)
+        return
+    end
+    vim.notify(
+        "Molten output: " .. (virt_text and "virtual text (stays)" or "floating window (follows cursor)")
+    )
 end
 
+-- Grouped by purpose, not by key: configs.whichkey turns the category and
+-- the position in each list into which-key's sort order, so the menu reads
+-- kernel -> run -> output -> move -> notebook.
+local menu = {
+    { "Kernel", {
+        { "i", "Init (active conda env)", init_kernel },
+        { "k", "Interrupt", "<cmd>MoltenInterrupt<cr>" },
+        { "R", "Restart", "<cmd>MoltenRestart!<cr>" },
+    } },
+    { "Run", {
+        { "r", "Cell", eval_cell },
+        { "l", "Line", "<cmd>MoltenEvaluateLine<cr>" },
+        { "v", "Selection", ":<C-u>MoltenEvaluateVisual<cr>gv", "x" },
+        { "c", "Re-run cell", "<cmd>MoltenReevaluateCell<cr>" },
+        { "a", "All cells", eval_all_cells },
+        { "A", "Re-run evaluated cells", "<cmd>MoltenReevaluateAll<cr>" },
+    } },
+    { "Output", {
+        { "t", "Toggle virtual text / float", toggle_output_mode },
+        { "o", "Show", "<cmd>MoltenShowOutput<cr>" },
+        { "h", "Hide", "<cmd>MoltenHideOutput<cr>" },
+        { "e", "Enter (scroll)", "<cmd>noautocmd MoltenEnterOutput<cr>" },
+        { "d", "Delete", "<cmd>MoltenDelete<cr>" },
+    } },
+    { "Move", {
+        { "n", "Next cell", goto_cell(1) },
+        { "p", "Previous cell", goto_cell(-1) },
+    } },
+    { "Notebook", {
+        { "x", "Export outputs to .ipynb", "<cmd>MoltenExportOutput<cr>" },
+        { "m", "Import outputs from .ipynb", "<cmd>MoltenImportOutput<cr>" },
+    } },
+}
+
 local function attach(buf)
-    map(buf, "<leader>ji", init_kernel, "Init kernel (active conda env)")
-    map(buf, "<leader>jr", eval_cell, "Run cell")
-    map(buf, "<leader>jl", "<cmd>MoltenEvaluateLine<cr>", "Run line")
-    map(buf, "<leader>jc", "<cmd>MoltenReevaluateCell<cr>", "Re-run cell")
-    map(buf, "<leader>ja", eval_all_cells, "Run all cells")
-    map(buf, "<leader>jA", "<cmd>MoltenReevaluateAll<cr>", "Re-run evaluated cells")
-    map(buf, "<leader>jv", ":<C-u>MoltenEvaluateVisual<cr>gv", "Run selection", "x")
-    map(buf, "<leader>jo", "<cmd>MoltenShowOutput<cr>", "Show output")
-    map(buf, "<leader>jh", "<cmd>MoltenHideOutput<cr>", "Hide output")
-    map(buf, "<leader>je", "<cmd>noautocmd MoltenEnterOutput<cr>", "Enter output (scroll)")
-    map(buf, "<leader>jn", goto_cell(1), "Next cell")
-    map(buf, "<leader>jp", goto_cell(-1), "Previous cell")
-    map(buf, "<leader>jk", "<cmd>MoltenInterrupt<cr>", "Interrupt kernel")
-    map(buf, "<leader>jR", "<cmd>MoltenRestart!<cr>", "Restart kernel")
-    map(buf, "<leader>jd", "<cmd>MoltenDelete<cr>", "Delete cell output")
-    map(buf, "<leader>jx", "<cmd>MoltenExportOutput<cr>", "Export outputs to .ipynb")
-    map(buf, "<leader>jm", "<cmd>MoltenImportOutput<cr>", "Import outputs from .ipynb")
+    local wkc = require("configs.whichkey")
+    local spec = { buffer = buf }
+
+    for _, group in ipairs(menu) do
+        local category, maps = group[1], group[2]
+        local labels = {}
+        for i, m in ipairs(maps) do
+            local key, label, rhs, mode = m[1], m[2], m[3], m[4]
+            vim.keymap.set(mode or "n", "<leader>j" .. key, rhs, {
+                buffer = buf,
+                desc = category .. wkc.SEP .. label,
+            })
+            labels[i] = { key, label, mode }
+        end
+        vim.list_extend(spec, wkc.entries(category, "<leader>j", labels))
+    end
+
+    local ok, wk = pcall(require, "which-key")
+    if ok then
+        wk.add(spec)
+    end
 end
 
 vim.api.nvim_create_autocmd("FileType", {

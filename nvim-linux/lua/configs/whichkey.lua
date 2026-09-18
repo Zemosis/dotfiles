@@ -18,6 +18,15 @@ M.categories = {
     Profile = { rank = 7, icon = "\u{f080}", color = "orange" },
     Threads = { rank = 8, icon = "\u{f0c0}", color = "yellow" },
     Edit = { rank = 9, icon = "\u{f044}", color = "grey" },
+
+    -- Jupyter/molten menu (<leader>j). Ranks are namespaced away from the
+    -- Lisp ones above purely for readability -- the two menus are filetype
+    -- scoped (python vs lisp) and never appear together.
+    Kernel = { rank = 11, icon = "\u{f135}", color = "azure" },
+    Run = { rank = 12, icon = "\u{f04b}", color = "green" },
+    Output = { rank = 13, icon = "\u{f06e}", color = "cyan" },
+    Move = { rank = 14, icon = "\u{f0dc}", color = "blue" },
+    Notebook = { rank = 15, icon = "\u{f02d}", color = "purple" },
 }
 
 -- which-key sorters are key extractors, not comparators: the view compares
@@ -31,14 +40,18 @@ end
 
 -- Build which-key spec entries for a list of { key, text[, mode] } under one
 -- category, e.g. M.entries("Eval", ",", { { "d", "defun" } }).
+-- "order" sits ahead of M.sort in the which-key sort list, so setting it
+-- here decides both the group order (via rank) and the order *within* a
+-- group (via the position in `maps`), instead of falling back to alphanum.
 function M.entries(category, prefix, maps)
     local cat = M.categories[category]
     local out = {}
-    for _, m in ipairs(maps) do
+    for i, m in ipairs(maps) do
         out[#out + 1] = {
             prefix .. m[1],
             desc = category .. M.SEP .. m[2],
             icon = { icon = cat.icon, color = cat.color },
+            order = cat.rank * 100 + i,
             mode = m[3],
         }
     end
