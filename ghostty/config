@@ -29,8 +29,8 @@ font-family-bold-italic = "JetBrainsMonoNerd Font Mono"
 # -----------------------------------------------------------------------------
 # Scrolling & History
 # -----------------------------------------------------------------------------
-# Maximum scrollback lines retained in memory
-scrollback-limit = 10000
+# Scrollback buffer size in BYTES (not lines); 50 MB
+scrollback-limit = 50000000
 
 # Multiplier applied to mouse wheel scrolling steps
 mouse-scroll-multiplier = 3
