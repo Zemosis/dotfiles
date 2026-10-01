@@ -49,6 +49,18 @@ return {
         end,
     },
 
+    -- File tree: also show git-ignored files (.env etc.); merges into
+    -- NvChad's defaults. Toggle in the tree with I (ignored) / H (dotfiles).
+    {
+        "nvim-tree/nvim-tree.lua",
+        opts = {
+            filters = {
+                dotfiles = false,
+                git_ignored = false,
+            },
+        },
+    },
+
     -- which-key ships icons for its own rules only; these give our custom
     -- maps the same treatment (doc-only entries -- the keymaps themselves
     -- live in mappings.lua and configs/molten.lua)
