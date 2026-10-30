@@ -1,0 +1,10 @@
+appindicatorsupport@rgcjonas.gmail.com
+arcmenu@arcmenu.com
+blur-my-shell@aunetx
+caffeine@patapon.info
+clipboard-indicator@tudmotu.com
+just-perfection-desktop@just-perfection
+media-controller@naimur
+rounded-window-corners@fxgn
+unblank@sun.wxg@gmail.com
+user-theme@gnome-shell-extensions.gcampax.github.com
