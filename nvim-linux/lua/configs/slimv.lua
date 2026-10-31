@@ -133,4 +133,23 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
+-- Paredit finds comments and strings through regex syntax groups, which
+-- vim.treesitter.start turns off. Without them it counts brackets in comments
+-- and strings (like a ":-)" smiley) as code, decides the form is unbalanced
+-- and stops auto-closing "(". Scheduled to run after treesitter has started.
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "lisp",
+    callback = function(args)
+        vim.schedule(function()
+            if not vim.api.nvim_buf_is_valid(args.buf) then
+                return
+            end
+            local bo = vim.bo[args.buf]
+            if bo.buftype == "" and bo.syntax == "" then
+                bo.syntax = "ON"
+            end
+        end)
+    end,
+})
+
 return M
