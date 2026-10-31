@@ -1,11 +1,23 @@
 -- Slimv settings + friendly which-key labels for its raw vimscript mappings.
 -- Loaded from the plugin's init (runs at startup, before slimv itself loads).
 
--- start the bundled SWANK server in a nvim terminal split
--- (slimv's autodetect would otherwise look for tmux/xterm)
-vim.g.slimv_swank_cmd = ':botright 12split | execute "terminal sbcl --load '
-    .. vim.fn.stdpath("data")
-    .. '/lazy/slimv/slime/start-swank.lisp" | wincmd p'
+local M = {}
+
+-- Run the bundled SWANK server in a terminal buffer that no window shows: it
+-- is listed, so it can be opened from the tabline, but takes up no split.
+function M.start_swank()
+    local buf = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_call(buf, function()
+        vim.fn.jobstart({
+            "sbcl",
+            "--load",
+            vim.fn.stdpath("data") .. "/lazy/slimv/slime/start-swank.lisp",
+        }, { term = true })
+    end)
+end
+
+-- slimv's autodetect would otherwise look for tmux/xterm
+vim.g.slimv_swank_cmd = ':lua require("configs.slimv").start_swank()'
 vim.g.slimv_repl_split = 4 -- REPL window on the right
 
 -- group all paredit commands under <leader>l ("lisp") instead of scattering
@@ -120,3 +132,5 @@ vim.api.nvim_create_autocmd("FileType", {
         end)
     end,
 })
+
+return M

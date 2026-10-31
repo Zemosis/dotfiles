@@ -129,13 +129,13 @@ Gitsigns shows add/change/delete marks in the gutter; use
 
 Components: **SBCL 2.6.7** (user-space, `~/.local/bin/sbcl`), **QuickLisp**
 (`~/quicklisp`, auto-loaded via `~/.sbclrc`), **Slimv** (SLIME port: REPL,
-eval, debugger, profiler) with **Paredit**, SWANK auto-started in a terminal
-split, `commonlisp` treesitter parser.
+eval, debugger, profiler) with **Paredit**, SWANK auto-started in a background
+terminal buffer (no split), `commonlisp` treesitter parser.
 
 ### Workflow
 
 1. Open a `.lisp` file.
-2. `,c` — starts SBCL+SWANK in a bottom terminal and connects (takes a few
+2. `,c` — starts SBCL+SWANK in a background buffer and connects (takes a few
    seconds the first time). A REPL buffer opens.
 3. `,d` evals the function under cursor · `,e` current expression ·
    `,b` whole buffer · `,r` selection.
